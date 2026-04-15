@@ -3,6 +3,7 @@
 This is a simple web application I built for my Web Programming Lab project. It helps track daily workout routines and monitors daily water intake goals all in one place. 
 
 I designed it with a clean, dark-mode focused look without relying too much on bloated Bootstrap styles, keeping the focus on speed and simplicity. 
+<img width="1748" height="873" alt="image" src="https://github.com/user-attachments/assets/ddde3452-4ec9-46af-a188-854272e55fec" />
 
 ## Features 🚀
 - **Dashboard:** A central place to view everything you've done today. 
