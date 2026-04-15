@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym & Hydration Logger</title>
+    <!-- Bootstrap grid strictly for layout -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery for AJAX -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        /* Minimalist Modern Dark Theme */
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1E1E1E;
+            --text-primary: #EFEFEF;
+            --text-secondary: #A0A0A0;
+            --accent-color: #4A90E2; /* Subtle accent */
+            --accent-hover: #357ABD;
+            --border-color: #2C2C2C;
+            --danger-color: #E24A4A;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 2rem 0;
+        }
+
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Minimalist surface containers */
+        .surface-container {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            /* No drop shadows */
+        }
+
+        /* Progress Bar Styling */
+        .progress-wrapper {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            height: 24px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            background-color: var(--accent-color);
+            height: 100%;
+            width: {{ percentage }}%;
+            transition: width 0.4s ease-out; /* Smooth transition */
+        }
+
+        /* Flat buttons */
+        .btn-flat {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-flat:hover {
+            background-color: var(--border-color);
+        }
+
+        .btn-primary-flat {
+            background-color: var(--accent-color);
+            color: white;
+            border: None;
+        }
+
+        .btn-primary-flat:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5rem;
+            padding: 0;
+            border-radius: 50%;
+        }
+
+        /* Forms */
+        input[type="text"], input[type="number"] {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .list-unstyled {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .list-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .list-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="mb-5">
+            <h1>Activity Dashboard</h1>
+            <p style="color: var(--text-secondary);">Track your workouts and hydration today.</p>
+        </header>
+
+        <div class="row">
+            <!-- Left Column: Hydration -->
+            <div class="col-md-6">
+                <div class="surface-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2>Hydration</h2>
+                        <button id="add-water-btn" class="btn-flat btn-primary-flat btn-icon">+</button>
+                    </div>
+                    
+                    <p style="color: var(--text-secondary);">Goal: 2000ml</p>
+                    
+                    <div class="d-flex justify-content-between">
+                        <span id="hydration-text">{{ hydration.current_volume }}ml</span>
+                        <span id="hydration-percent">{{ percentage }}%</span>
+                    </div>
+
+                    <div class="progress-wrapper">
+                        <div id="hydration-bar" class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Workouts -->
+            <div class="col-md-6">
+                
+                <div class="surface-container">
+                    <h2>Log Workout</h2>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-12">
+                                <label for="exercise_type">Exercise</label>
+                                <input type="text" id="exercise_type" name="exercise_type" required placeholder="e.g. Bench Press">
+                            </div>
+                            <div class="col-6">
+                                <label for="sets">Sets</label>
+                                <input type="number" id="sets" name="sets" required min="1" placeholder="e.g. 3">
+                            </div>
+                            <div class="col-6">
+                                <label for="reps">Reps</label>
+                                <input type="number" id="reps" name="reps" required min="1" placeholder="e.g. 10">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-flat btn-primary-flat" style="width: 100%;">Log Set</button>
+                    </form>
+                </div>
+
+                <div class="surface-container">
+                    <h2>Today's Workouts</h2>
+                    {% if workouts %}
+                        <ul class="list-unstyled">
+                        {% for workout in workouts %}
+                            <li class="list-item d-flex justify-content-between align-items-center">
+                                <span><strong>{{ workout.exercise_type }}</strong></span>
+                                <span style="color: var(--text-secondary);">{{ workout.sets }} sets × {{ workout.reps }} reps</span>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p style="color: var(--text-secondary);">No workouts logged today.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Setup CSRF token for jQuery AJAX
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        const csrftoken = getCookie('csrftoken');
+
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!(/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+
+        $(document).ready(function() {
+            $('#add-water-btn').click(function() {
+                // Add visual feedback to button
+                $(this).css('opacity', '0.7');
+                
+                $.ajax({
+                    url: '/api/add_water/',
+                    type: 'POST',
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            // Update UI smoothly
+                            $('#hydration-text').text(response.current_volume + 'ml');
+                            $('#hydration-percent').text(response.percentage + '%');
+                            $('#hydration-bar').css('width', response.percentage + '%');
+                        }
+                    },
+                    error: function(xhr, errmsg, err) {
+                        console.log(errmsg);
+                    },
+                    complete: function() {
+                        $('#add-water-btn').css('opacity', '1');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
