@@ -140,9 +140,14 @@
 </head>
 <body>
     <div class="container">
-        <header class="mb-5">
-            <h1>Activity Dashboard</h1>
-            <p style="color: var(--text-secondary);">Track your workouts and hydration today.</p>
+        <header class="mb-5 d-flex justify-content-between align-items-center">
+            <div>
+                <h1>Activity Dashboard</h1>
+                <p style="color: var(--text-secondary); margin-bottom: 0;">Track your workouts and hydration today.</p>
+            </div>
+            <div>
+                <a href="{% url 'history' %}" class="btn-flat text-decoration-none">View History</a>
+            </div>
         </header>
 
         <div class="row">
@@ -154,7 +159,11 @@
                         <button id="add-water-btn" class="btn-flat btn-primary-flat btn-icon">+</button>
                     </div>
                     
-                    <p style="color: var(--text-secondary);">Goal: 2000ml</p>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Goal: 
+                            <input type="number" id="goal-input" value="{{ goal }}" style="width: 70px; display: inline-block; padding: 0.2rem; margin: 0; background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" /> ml
+                        </span>
+                    </div>
                     
                     <div class="d-flex justify-content-between">
                         <span id="hydration-text">{{ hydration.current_volume }}ml</span>
@@ -198,8 +207,16 @@
                         <ul class="list-unstyled">
                         {% for workout in workouts %}
                             <li class="list-item d-flex justify-content-between align-items-center">
-                                <span><strong>{{ workout.exercise_type }}</strong></span>
-                                <span style="color: var(--text-secondary);">{{ workout.sets }} sets × {{ workout.reps }} reps</span>
+                                <div>
+                                    <span><strong>{{ workout.exercise_type }}</strong></span>
+                                    <span style="color: var(--text-secondary); margin-left: 10px;">{{ workout.sets }} sets × {{ workout.reps }} reps</span>
+                                </div>
+                                <form method="POST" action="{% url 'delete_workout' workout.id %}" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-flat" style="padding: 0.2rem 0.5rem; color: var(--danger-color); border-color: var(--border-color);">
+                                        &times;
+                                    </button>
+                                </form>
                             </li>
                         {% endfor %}
                         </ul>
@@ -261,6 +278,24 @@
                         $('#add-water-btn').css('opacity', '1');
                     }
                 });
+            });
+
+            // Update Goal AJAX
+            $('#goal-input').change(function() {
+                let newGoal = $(this).val();
+                if(newGoal > 0) {
+                    $.ajax({
+                        url: '/api/update_goal/',
+                        type: 'POST',
+                        data: { 'goal_volume': newGoal },
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                $('#hydration-percent').text(response.percentage + '%');
+                                $('#hydration-bar').css('width', response.percentage + '%');
+                            }
+                        }
+                    });
+                }
             });
         });
     </script>
